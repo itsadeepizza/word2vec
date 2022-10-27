@@ -1,0 +1,8 @@
+runs/
+wikienv/
+__pycache__/
+*.csv
+*.vim
+*.png
+prova.py
+song.py
