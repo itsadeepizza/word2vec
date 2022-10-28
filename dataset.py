@@ -4,7 +4,14 @@ from torch.utils.data import Dataset,DataLoader
 
 # utils
 def get_vocab(vocfile):
-    voc = pd.read_csv(vocfile,sep=";", header = None)
+    print("reading dataset")
+    try:
+        voc = pd.read_csv(vocfile,sep=";", header = None)
+    except FileNotFoundError:
+        print("file not found: creating dataset and vocab")
+        from makeds import run
+        run()
+        voc = pd.read_csv(vocfile,sep=";", header = None)
     result = {}
     vocab = voc.get(0)
     for i,element in enumerate(vocab):
@@ -21,8 +28,13 @@ def one_hot(index,size):
 class CustomDataset(Dataset):
     def __init__(self, file):
         try:
+            print("reading dataset")
             self.f_dataset = pd.read_csv("dataset.csv",sep = ";",skipinitialspace=True)
             self.num_samples = len(self.f_dataset)
+        except FileNotFoundError:
+            from makeds import run
+            print("file not found: creating dataset & vocab")
+            run()
         except:
             print("cant open file :C")
             quit()

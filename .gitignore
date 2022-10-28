@@ -4,5 +4,6 @@ __pycache__/
 *.csv
 *.vim
 *.png
+*.pth
 prova.py
 song.py

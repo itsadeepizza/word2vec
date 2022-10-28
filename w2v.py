@@ -1,14 +1,20 @@
 import torch
 import torch.nn as nn
 from dataset import dataloader
-from dataset import dataset
 from dataset import vocab
 from model import Model
 
 if torch.cuda.is_available(): device = torch.device("cuda") 
 
-use_tensorboard = True
+use_tensorboard = False
+use_existing_model = False
+save_freq = 10000
+model_file = "model.pth"
 model = Model(device=device,len_voc=len(vocab))
+if use_existing_model: 
+    print(f"loading model from file {model_file}")
+    model.load_state_dict(torch.load(model_file))
+
 opt = torch.optim.SGD(model.parameters(), lr = 0.01)
 criterion = torch.nn.L1Loss()
 
@@ -27,20 +33,15 @@ if use_tensorboard:
     def gen_plot(embedding,word1,word2,word3,step):
         with torch.no_grad():
             
-            #esperimenti con tensorboard
-            #mat = torch.stack((embedding(vocab[word1]),embedding(vocab[word2]),embedding(vocab[word3])))
-            #writer.add_embedding(mat,global_step=step)
-            #writer.add_mesh("embedding", mat[None,:],global_step=step)
-
             fig = plt.figure()
             ax = fig.add_subplot(111, projection='3d')
             (v1,v2,v3) = (embedding(vocab[word1]).tolist(), \
                        embedding(vocab[word2]).tolist(), \
                        embedding(vocab[word3]).tolist())
             #only 3 dim of embedding
-            #v1 = [v1[1],v1[3],v1[4]]
-            #v2 = [v2[1],v2[3],v2[4]]
-            #v3 = [v3[1],v3[3],v3[4]]
+            v1 = [v1[0],v1[1],v1[2]]
+            v2 = [v2[0],v2[1],v2[2]]
+            v3 = [v3[0],v3[1],v3[2]]
 
             v1.insert(0,0)
             v1.insert(0,0)
@@ -58,7 +59,7 @@ if use_tensorboard:
             ax.set_xlim([-1, 1])
             ax.set_ylim([-1, 1])
             ax.set_zlim([-1, 1])
-            plt.title("is(blue) - was(red) - a(green)")
+            plt.title(f"{word1}(blue) - {word2}(red) - {word3}(green)")
             buf = io.BytesIO()
             plt.savefig(buf, format='jpeg')
             buf.seek(0)
@@ -89,6 +90,9 @@ for epoch in range(50):
                 image = PIL.Image.open(plot_buf)
                 image = ToTensor()(image).unsqueeze(0)[0]
                 writer.add_image('plot embedding', image, index)
+        if i % save_freq == 0:
+            torch.save(model.state_dict(),model_file)
+            print("model saved to file")
         loss.backward()
         opt.step()
         opt.zero_grad()
