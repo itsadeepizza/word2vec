@@ -6,7 +6,7 @@ from model import Model
 
 if torch.cuda.is_available(): device = torch.device("cuda") 
 
-use_tensorboard = False
+use_tensorboard = True
 use_existing_model = False
 save_freq = 10000
 model_file = "model.pth"
