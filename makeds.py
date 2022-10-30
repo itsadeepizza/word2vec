@@ -14,7 +14,7 @@ def make_csv(vocab): # very slow
     print("writing dataset")
     f = open("dataset.csv", "w")
     f.write("target" + "; "+ "word" + "; " + "is_close"+"\n")
-    for element in tqdm(vocab,ascii=True, desc="dataset"):
+    for element in tqdm(vocab, ascii=True, desc="dataset"):
         for close_word in vocab[element]:
             f.write(element + "; "+ close_word + "; " + "1"+"\n")
             neg_samples = []
@@ -61,5 +61,5 @@ def run():
     f.close()
     make_csv(vocab)
 
-if __name__=="__main__":
+if __name__ == "__main__":
     run()

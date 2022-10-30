@@ -7,15 +7,15 @@ from model import Model
 if torch.cuda.is_available(): device = torch.device("cuda") 
 
 use_tensorboard = True
-use_existing_model = False
+use_existing_model = True
 save_freq = 10000
 model_file = "model.pth"
-model = Model(device=device,len_voc=len(vocab))
+model = Model(device=device, len_voc=len(vocab))
 if use_existing_model: 
     print(f"loading model from file {model_file}")
     model.load_state_dict(torch.load(model_file))
 
-opt = torch.optim.SGD(model.parameters(), lr = 0.01)
+opt = torch.optim.SGD(model.parameters(), lr=1e-4)
 criterion = torch.nn.L1Loss()
 
 if use_tensorboard:
@@ -27,10 +27,10 @@ if use_tensorboard:
     import matplotlib 
 
     writer = SummaryWriter()
-    writer.add_graph(model,next(iter(dataloader))[0])
+    writer.add_graph(model, next(iter(dataloader))[0])
     matplotlib.use('Agg')
 
-    def gen_plot(embedding,word1,word2,word3,step):
+    def gen_plot(embedding, word1, word2, word3, step):
         with torch.no_grad():
             
             fig = plt.figure()
@@ -76,10 +76,10 @@ with torch.no_grad():
 
 # training loop
 tot_iters = 0
-for epoch in range(50):
+for epoch in range(50, 500):
     print("epoch started: ",epoch)
     data = iter(dataloader)
-    for i,(words,label) in enumerate(data):
+    for i, (words, label) in enumerate(data):
         out = model(words)
         loss = criterion(out, label.to(device))
         if i % 1000 == 0:
@@ -90,6 +90,7 @@ for epoch in range(50):
                 image = PIL.Image.open(plot_buf)
                 image = ToTensor()(image).unsqueeze(0)[0]
                 writer.add_image('plot embedding', image, index)
+                writer.add_scalar('train_loss', loss.item(), index)
         if i % save_freq == 0:
             torch.save(model.state_dict(),model_file)
             print("model saved to file")
