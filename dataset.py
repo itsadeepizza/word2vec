@@ -4,7 +4,7 @@ from torch.utils.data import Dataset, DataLoader
 
 # utils
 def get_vocab(vocfile):
-    print("reading dataset")
+    print("reading vocab")
     try:
         voc = pd.read_csv(vocfile, sep=";", header=None)
     except FileNotFoundError:
@@ -19,11 +19,9 @@ def get_vocab(vocfile):
     return result
 
 def one_hot(index,size):
-    res = []
-    for _ in range(size):
-        res.append(0)
+    res = torch.zeros(size)
     res[index] = 1
-    return torch.Tensor(res)
+    return res 
 
 class CustomDataset(Dataset):
     def __init__(self, file):

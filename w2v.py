@@ -4,7 +4,7 @@ from dataset import dataloader
 from dataset import vocab
 from model import Model
 
-if torch.cuda.is_available(): device = torch.device("cuda") 
+device = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
 
 use_tensorboard = True
 use_existing_model = True
@@ -13,7 +13,10 @@ model_file = "model.pth"
 model = Model(device=device, len_voc=len(vocab))
 if use_existing_model: 
     print(f"loading model from file {model_file}")
-    model.load_state_dict(torch.load(model_file))
+    try:
+        model.load_state_dict(torch.load(model_file))
+    except FileNotFoundError:
+        print(f"can't find {model_file}, creating a new model to train")
 
 opt = torch.optim.SGD(model.parameters(), lr=1e-4)
 criterion = torch.nn.L1Loss()
@@ -76,7 +79,7 @@ with torch.no_grad():
 
 # training loop
 tot_iters = 0
-for epoch in range(50, 500):
+for epoch in range(50):
     print("epoch started: ",epoch)
     data = iter(dataloader)
     for i, (words, label) in enumerate(data):
